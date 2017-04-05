@@ -16,14 +16,65 @@
                     <title>Google Map Form Control Sample</title>
                 </head>
                 <body>
-                    <p>A sample framework that uses Google Maps to show and edit some attribute values representing coordinates.</p>
-                    <div>How to test it, after installing:
-                      <ol>
+                    <p>A sample framework uses a <a href="https://www.oxygenxml.com/doc/ug-editor/topics/oxy-browser-form-control.html">Browser Form control</a> to load an HTML. This HTML 
+                        shows the coordinates using Google Maps and allows you to and edit the attributes underneath.</p>
+                    <div>
+                        <h2>How to test it, after install</h2>
+                        <ol>
                           <li>Open the file <span>form-controls/travel-guide/travel-guide.xml</span> from Oxygen's samples directory.</li>
                           <li>Scroll to the Points of Interest section.</li>
                           <li>Each point of interest has an address. Next to each address there is an action. Click the action.</li>
-                          <li>A form control will appear and will present the coordinates on map. Using right click you can move the marker. The address text and attributes will be updated.</li>
-                      </ol>    
+                          <li>A form control will appear and will present a marker on the map. Using right click you can move the marker and the address text and attributes will be updated automatically.</li>
+                      </ol>
+                    </div>
+                    <div>
+                        <h2>How it works</h2>
+                        <div>
+                            <p>Everything is based on the <a href="https://www.oxygenxml.com/doc/ug-editor/topics/oxy-browser-form-control.html">Browser Form control</a> that loads
+                                <a href="https://raw.githubusercontent.com/AlexJitianu/oXygen-XML-maps-sample-framework/master/map.html">map.html</a>:</p>
+                            <pre>address:before(3):-oxy-edit-gps {
+    display:block;
+    content: oxy_browser(
+                    href, oxy_url("map.html"), 
+                    width, 100%, 
+                    height, 400px
+                    );
+}</pre>
+                            <p>The HTML loaded by this form control uses Google Maps to presents the coordinates:</p>
+                            <pre>    //--------------------------------------------------
+    // Initializes the map on the given coordinates.
+    //--------------------------------------------------
+    function initialize(lat, lng) {
+        
+        var latlng = new google.maps.LatLng(lat, lng);
+        var myOptions = {
+            zoom: 15,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            // mapTypeId : google.maps.MapTypeId.HYBRID,
+            mapTypeControl: false,
+            navigationControl: false,
+            streetViewControl: false
+        };
+        
+        document.map = new google.maps.Map(document.getElementById("map"), myOptions);
+    }</pre>
+                            <p>The interaction between the Javascript and the Oxygen Workspace is possible through a number global variables visible in Javascript:</p>
+                                <ul>
+                                    <li><b>authorAccess</b>- this object is an instance of an <a href="https://www.oxygenxml.com/InstData/Editor/SDK/javadoc/ro/sync/ecss/extensions/api/AuthorAccess.html">ro.sync.ecss.extensions.api.AuthorAccess</a>.</li>
+                                    <li><b>contextElement</b> - an instance of an <a href="https://www.oxygenxml.com/InstData/Editor/SDK/javadoc/ro/sync/ecss/extensions/api/node/AuthorNode.html">ro.sync.ecss.extensions.api.node.AuthorNode</a>. The form control is added over this node.</li>
+                                    <li><b>pluginWorkspace</b>- an instance of an <a href="https://www.oxygenxml.com/InstData/Editor/SDK/javadoc/ro/sync/exml/workspace/api/standalone/StandalonePluginWorkspace.html">ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace</a>.</li>
+                                    <li><b>fcArguments</b> - a java.util.Map implementation tith the property name - property value pairs put on the form control function.</li>
+                                    <li><b>apiHelper</b> - A helper object for creating Java objects. These objects can afterwards be passed as arguments when calling Oxygen's Java API.</li>
+                                </ul>
+                            <pre> var newAttrValue = apiHelper.newInstance(
+           "ro.sync.ecss.extensions.api.node.AttrValue",
+           ["normalizedValue", "rawValue", true]);
+ authorAccess.getDocumentController().setAttribute(
+        "counter", newAttrValue, contextElement);</pre>
+                              
+                            <p>Please see <a href="https://raw.githubusercontent.com/AlexJitianu/oXygen-XML-maps-sample-framework/master/map.html">map.html</a> for the full version.</p>
+                        </div>
                     </div>
                 </body>
             </html>
