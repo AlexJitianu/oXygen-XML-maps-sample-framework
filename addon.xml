@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xt:extensions xmlns:xt="http://www.oxygenxml.com/ns/extension"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.oxygenxml.com/ns/extension http://www.oxygenxml.com/ns/extension/extensions.xsd">
+    <xt:extension id="sample.gmap.framework">
+        <xt:location
+            href="https://github.com/AlexJitianu/oXygen-XML-maps-sample-framework/archive/master.zip"/>
+        <xt:version>1.0.0</xt:version>
+        <xt:oxy_version>19.0+</xt:oxy_version>
+        <xt:type>framework</xt:type>
+        <xt:author>Alex Jitianu</xt:author>
+        <xt:name>Google Map Form Control Sample</xt:name>
+        <xt:description xmlns="http://www.w3.org/1999/xhtml">
+            <html>
+                <head>
+                    <title>Google Map Form Control Sample</title>
+                </head>
+                <body>
+                    <p>A sample framework that uses Google Maps to show and edit some attribute values representing coordinates.</p>
+                    <div>How to test it, after installing:
+                      <ol>
+                          <li>Open the file <span>form-controls/travel-guide/travel-guide.xml</span> from Oxygen's samples directory.</li>
+                          <li>Scroll to the Points of Interest section.</li>
+                          <li>Each point of interest has an address. Next to each address there is an action. Click the action.</li>
+                          <li>A form control will appear and will present the coordinates on map. Using right click you can move the marker. The address text and attributes will be updated.</li>
+                      </ol>    
+                    </div>
+                </body>
+            </html>
+        </xt:description>
+
+    </xt:extension>
+</xt:extensions>

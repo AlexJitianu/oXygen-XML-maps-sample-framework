@@ -1,0 +1,29 @@
+/* ---------------------------------------------- */
+/* ----------------COORDINATES EDIT-------------- */
+/* ---------------------------------------------- */
+
+address {
+    display:block;
+}
+address:before(2) {
+    content: 
+    oxy_button(
+    action,
+    oxy_action(
+          name, 'edit', 
+          icon,'/images/EditComment16.png',
+          operation, 'TogglePseudoClassOperation', 
+          arg-name, '-oxy-edit-gps')
+    ,transparent, true
+    )
+
+}
+
+address:before(3):-oxy-edit-gps {
+    display:block;
+    content: oxy_browser(
+                    href, oxy_url("map.html"), 
+                    width, 100%, 
+                    height, 400px
+                    );
+}

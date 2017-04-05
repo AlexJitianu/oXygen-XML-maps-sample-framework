@@ -1,0 +1,171 @@
+<html>
+<head>
+<style type="text/css">
+html,body,#map {
+	height: 100%;
+	margin: 0px;
+	padding: 0px
+}
+</style>
+<script type="text/javascript"
+	src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	
+<script type="text/javascript">
+    /** 
+     * This function is called by Oxygen after the Javascript to Java bridge is installed. This bridge 
+     * consists in the following global variables:
+     * 
+     * authorAccess - this object is an instance of an ro.sync.ecss.extensions.api.AuthorAccess.
+     * contextElement - an instance of an ro.sync.ecss.extensions.api.node.AuthorNode. The form control is added over this node.
+     * pluginWorkspace- an instance of an ro.sync.exml.workspace.api.standalone.StandalonePluginWorkspace
+     * fcArguments - a java.util.Map implementation tith the property name - property value pairs put on the form control function.
+     * apiHelper - A helper object for creating Java objects. These objects can afterwards be passed as arguments when calling Oxygen's Java API:
+     * 
+     * var newAttrValue = apiHelper.newInstance(
+     *           "ro.sync.ecss.extensions.api.node.AttrValue",
+     *           ["normalizedValue", "rawValue", true]);
+     * authorAccess.getDocumentController().setAttribute(
+     *        "counter", newAttrValue, contextElement);
+     */
+    function bridgeReady() {
+        initialize(getAttr("lat"), getAttr("lng"));
+    }
+    
+    //----------------------------------------------------------------
+    // A sample on how to use Oxygen's API. 
+    // contextElement is the AuthorNode bound to the form control
+    //----------------------------------------------------------------
+    function getAttr(attrName) {
+        var attrValue = contextElement.getAttribute(attrName);
+        // The returned object is an instance of "ro.sync.ecss.extensions.api.node.AttrValue".
+        if (attrValue != null) {
+            return attrValue.getValue();
+        }
+        return "";
+    }
+    
+    //--------------------------------------------------
+    // Initializes the map on the given coordinates.
+    //--------------------------------------------------
+    function initialize(lat, lng) {
+        
+        var latlng = new google.maps.LatLng(lat, lng);
+        var myOptions = {
+            zoom: 15,
+            center: latlng,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            // mapTypeId : google.maps.MapTypeId.HYBRID,
+            mapTypeControl: false,
+            navigationControl: false,
+            streetViewControl: false
+        };
+        
+        document.map = new google.maps.Map(document.getElementById("map"),
+        myOptions);
+        
+        document.geocoder = new google.maps.Geocoder();
+        
+        var myLatLng = new google.maps.LatLng(lat, lng),
+        
+        marker = new google.maps.Marker({
+            position: myLatLng,
+            map: document.map
+        });
+        marker.setMap(document.map);
+        
+        document.marker = marker;
+        
+        //--------------------------------------------------
+        // Change the marker on right click.
+        //--------------------------------------------------
+        google.maps.event.addListener(document.map, "rightclick", function (
+        event) {
+            var lat = event.latLng.lat();
+            var lng = event.latLng.lng();
+            
+            moveMarker(document.map, lat, lng);
+        });
+    }
+    
+    /**
+     * Moves the marker to the given coordinates and updates the XML document.
+     */
+    function moveMarker(map, lat, lng) {
+        
+        document.marker.setMap(null);
+        
+        setTimeout(function () {
+            
+            // Update the marker.
+            document.marker.setPosition(new google.maps.LatLng(lat, lng));
+            document.marker.setMap(map);
+            
+            
+            // Start the geocoder. When we have the address we will update the document.
+            document.geocoder.geocode(
+			{ 'location': new google.maps.LatLng(lat, lng)},
+            function (results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                //-------------------------
+				// Helper API for creating Java objects.
+				// apiHelper.newInstance("class.qualified.name", [param1, param2,...]);
+				//-------------------------
+				var attr = apiHelper.newInstance("ro.sync.ecss.extensions.api.node.AttrValue",[ "" + lat]);
+				
+				//-------------------------
+				// The variable authorAccess is the gateway into the author page API.
+				//-------------------------
+				var ctrl = authorAccess.getDocumentController();
+				
+				ctrl.beginCompoundEdit();
+				try {
+				
+					// Set the latitude.
+					ctrl.setAttribute(
+					"lat",
+					attr,
+					contextElement);
+
+					// Set the longitude.
+					ctrl.setAttribute(
+					"lng",
+					apiHelper.newInstance("ro.sync.ecss.extensions.api.node.AttrValue",[ "" + lng]),
+					contextElement);
+            
+                
+                    //-------- Update the Text address ------------
+					
+					// Step 1 : Delete the current address.
+					if (contextElement.getStartOffset() + 1 != contextElement.getEndOffset()) {
+					    // Instead of a simple call: ctrl.delete(offset1, offset2) we use this form because the delete() 
+					    // method is overloaded. In these situations the bridge doesn't know which method to call.
+					    ctrl[ "delete(int,int)"](contextElement.getStartOffset() + 1, contextElement.getEndOffset() - 1);
+					}
+					
+					// Step 2 : Insert the new address.
+                    ctrl.insertText(contextElement.getStartOffset() + 1, results[0].formatted_address);
+                    
+                    } catch (e) {
+						console.log(e);
+						console.log(e.stack);
+					} finally {
+						ctrl.endCompoundEdit();
+					}
+                    
+                } else {
+                    console.log("Address retrieval failed because of: " + status);
+                }
+            });
+            
+        },
+        100);
+    }
+
+
+
+</script>
+</head>
+<body>
+	<div id="map"></div>
+</body>
+</html>
