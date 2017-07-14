@@ -117,6 +117,10 @@ html,body,#map {
 				//-------------------------
 				var ctrl = authorAccess.getDocumentController();
 				
+				// On, Mac, everything that changes the document risks to generate a deadlock.
+				// https://bugs.openjdk.java.net/browse/JDK-8087465
+				ctrl.async();
+				
 				ctrl.beginCompoundEdit();
 				try {
 				
@@ -135,21 +139,29 @@ html,body,#map {
                 
                     //-------- Update the Text address ------------
 					
+                    var start = contextElement.getStartOffset();
+                    var end =  contextElement.getEndOffset();
+                    
 					// Step 1 : Delete the current address.
-					if (contextElement.getStartOffset() + 1 != contextElement.getEndOffset()) {
+					if (start + 1 != end) {
 					    // Instead of a simple call: ctrl.delete(offset1, offset2) we use this form because the delete() 
 					    // method is overloaded. In these situations the bridge doesn't know which method to call.
-					    ctrl[ "delete(int,int)"](contextElement.getStartOffset() + 1, contextElement.getEndOffset() - 1);
+					    ctrl[ "delete(int,int)"](start + 1, end - 1);
 					}
 					
 					// Step 2 : Insert the new address.
-                    ctrl.insertText(contextElement.getStartOffset() + 1, results[0].formatted_address);
+                    ctrl.insertText(start + 1, results[0].formatted_address);
                     
                     } catch (e) {
 						console.log(e);
-						console.log(e.stack);
+						// This will print the stack trace to Oxygen's console (if the exception came for the JAVA API).
+						try {
+						  e.printStackTrace();
+						} catch (ex) {console.log(ex);}
 					} finally {
 						ctrl.endCompoundEdit();
+						
+						ctrl.sync();
 					}
                     
                 } else {
